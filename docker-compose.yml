@@ -1,0 +1,27 @@
+version: '2'
+services:
+  data-volume-container: 
+    build: ./busybox
+    container_name: box
+
+  mysql: 
+    image: mysql:5.6
+    volumes:
+      - ./mysql/conf.d:/etc/mysql/conf.d
+    volumes_from:
+      - data-volume-container
+    environment:
+      - MYSQL_ROOT_PASSWORD=pass
+    ports:
+      - "127.0.0.1:33306:3306"
+    container_name: mysql
+
+  php: 
+    build: ./php
+    volumes:
+      - /Library/WebServer/Documents:/var/www/html
+    ports:
+      - "127.0.0.1:80:80"
+    links:
+      - mysql:mysql
+    container_name: php
