@@ -1,27 +1,65 @@
 version: '2'
 services:
-  data-volume-container: 
-    build: ./busybox
-    container_name: box
 
-  mysql: 
-    image: mysql:5.6
+  php-apache:
+    image: php/apache:7.0.16
+    build: .
     volumes:
-      - ./mysql/conf.d:/etc/mysql/conf.d
-    volumes_from:
-      - data-volume-container
-    environment:
-      - MYSQL_ROOT_PASSWORD=pass
-    ports:
-      - "127.0.0.1:33306:3306"
-    container_name: mysql
-
-  php: 
-    build: ./php
-    volumes:
-      - /Library/WebServer/Documents:/var/www/html
+      # プログラムファイルのマウント
+      - /Users/yuki.tominaga/Documents/research:/var/www/html
     ports:
       - "127.0.0.1:80:80"
-    links:
-      - mysql:mysql
-    container_name: php
+    tty: true
+    networks:
+      apache_net:
+        ipv4_address: 172.20.0.2
+    container_name: php-apache
+
+  mysql-server:
+    image: mysql-server:5.6.29
+    build: ./mysql
+    volumes:
+      # ホストのディレクトリ:コンテナ内のディレクトリ
+      # TODO: 任意のローカルディレクトリに変更する
+      - /Users/yuki.tominaga/Documents/research/mysql:/var/lib/mysql
+      # プログラムファイルのマウント mysql sourceコマンドのため
+      # TODO: 任意のローカルディレクトリに変更する
+      - /Users/yuki.tominaga/Documents/research:/var/www/html
+    environment:
+      - MYSQL_ROOT_PASSWORD=cbase3554
+    ports:
+      - "127.0.0.1:3306:3306"
+    networks:
+      apache_net:
+        ipv4_address: 172.20.0.3
+    container_name: mysql-server
+
+  redis:
+    image: redis:3.2.5-alpine
+    tty: true
+    networks:
+      apache_net:
+        ipv4_address: 172.20.0.4
+    container_name: redis-server
+
+  mailcatcher:
+    image: tophfr/mailcatcher
+    tty: true
+    ports:
+      - "127.0.0.1:1080:80"
+    networks:
+      apache_net:
+        ipv4_address: 172.20.0.5
+    container_name: mailcatcher-server
+
+networks:
+  # コンテナのipアドレスは同一サブネット内であればなんでもいい
+  apache_net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.20.0.0/28
+        gateway: 172.20.0.1

@@ -1,0 +1,5 @@
+.DS_Store
+apache2.conf
+httpd.conf
+httpd.conf.orig
+php.ini.orig
