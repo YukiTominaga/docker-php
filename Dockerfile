@@ -42,15 +42,19 @@ COPY php.ini /usr/local/etc/php
 ADD php.tar.gz /usr/local/lib
 
 WORKDIR /usr/local/src
-RUN wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64\.tar.bz2 && \
-    tar xf phantomjs-2.1.1-linux-x86_64.tar.bz2
-COPY rasterize /usr/local/src/phantomjs-2.1.1-linux-x86_64/bin/rasterize
-RUN ln -bs /usr/local/src/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/local/bin/phantomjs && \
-    ln -bs /usr/local/src/phantomjs-2.1.1-linux-x86_64/bin/rasterizejs /usr/local/bin/rasterizejs && \
+RUN wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2 && \
+    tar xf phantomjs-2.1.1-linux-x86_64.tar.bz2 && \
+    mv phantomjs-2.1.1-linux-x86_64 phantomjs
+COPY rasterize /usr/local/src/phantomjs/bin/rasterize
+RUN ln -bs /usr/local/src/phantomjs/bin/phantomjs /usr/local/bin/phantomjs && \
+    ln -bs /usr/local/src/phantomjs/bin/rasterize /usr/local/bin/rasterizejs && \
     ln -bs /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load && \
     ln -bs /etc/apache2/mods-available/authz_groupfile.load /etc/apache2/mods-enabled/authz_groupfile.load && \
     ln -bs /etc/apache2/mods-available/headers.load /etc/apache2/mods-enabled/headers.load && \
-    sed -i "s/#ServerName www.example.com/ServerName local.cservice.jp:80/g" /etc/apache2/sites-enabled/000-default.conf
+    sed -i "s/#ServerName www.example.com/ServerName local.cservice.jp:80/g" /etc/apache2/sites-enabled/000-default.conf && \
+    apt-get clean
+
+WORKDIR /var/www/html
 
 ENTRYPOINT ["docker-php-entrypoint"]
 EXPOSE 80
