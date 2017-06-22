@@ -1,2 +1,0 @@
-#!/bin/sh
-/usr/local/src/phantomjs/bin/phantomjs /usr/local/src/phantomjs/examples/rasterize.js $@
